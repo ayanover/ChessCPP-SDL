@@ -399,7 +399,7 @@ extern DECLSPEC SDL_Cursor *SDLCALL SDL_GetDefaultCursor(void);
 /**
  * Free a previously-created cursor.
  *
- * Use this function to free cursor resources created with SDL_CreateCursor(),
+ * Use this function to free cursor assets created with SDL_CreateCursor(),
  * SDL_CreateColorCursor() or SDL_CreateSystemCursor().
  *
  * \param cursor the cursor to free

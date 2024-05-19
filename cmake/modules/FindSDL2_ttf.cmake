@@ -48,7 +48,7 @@ find_path(SDL2_TTF_INCLUDE_DIR SDL_ttf.h
         ENV SDL2DIR
         PATH_SUFFIXES SDL2
         # path suffixes to search inside ENV{SDLDIR}
-        include/SDL2 include
+        include/SDL2_ttf include
         PATHS ${SDL2_TTF_PATH}
         )
 
@@ -65,6 +65,7 @@ find_library(SDL2_TTF_LIBRARY
         ENV SDL2DIR
         PATH_SUFFIXES lib ${VC_LIB_PATH_SUFFIX}
         PATHS ${SDL2_TTF_PATH}
+        NO_DEFAULT_PATH
         )
 
 if (SDL2_TTF_INCLUDE_DIR AND EXISTS "${SDL2_TTF_INCLUDE_DIR}/SDL_ttf.h")

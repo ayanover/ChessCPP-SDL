@@ -38,7 +38,7 @@ script.
 ```bash
 mkdir build
 cd build
-CC=$PWD/../build-scripts/clang-fat.sh ../configure
+CC=$PWD/../build-src/clang-fat.sh ../configure
 make
 sudo make install
 ```
