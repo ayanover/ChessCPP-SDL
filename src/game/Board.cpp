@@ -1,23 +1,30 @@
 #include "../../include/Board.hpp"
-#include "../../include/pieces/Pawn.hpp"
+#include "enums/ColorType.hpp"
+#include "enums/PieceType.hpp"
 
-const int TILE_SIZE = 100;
+const int TILE_SIZE = 80;
 
 Board::Board(SDL_Renderer* renderer) : renderer(renderer) {
     initialize();
 }
 
 void Board::initialize() {
-    // Resize the board to 8x8 and initialize with nullptrs
     board.resize(8, std::vector<Piece*>(8, nullptr));
 
-    // Example of placing pieces on the board
     for (int i = 0; i < 8; ++i) {
-        board[1][i] = new Pawn(Piece::WHITE);
-        board[6][i] = new Pawn(Piece::BLACK);
+        board[1][i] = new Piece(ColorType::WHITE, PieceType::PAWN);
+        board[6][i] = new Piece(ColorType::BLACK, PieceType::PAWN);
     }
+}
 
-    // Place other pieces, e.g., Rooks, Knights, Bishops, Queen, and King
+Board::~Board() {
+    for (auto & row : board) {
+        for (auto & piece : row) {
+            delete piece;
+            SDL_DestroyTexture(whiteTileTexture);
+            SDL_DestroyTexture(blackTileTexture);
+        }
+    }
 }
 
 void Board::display() {

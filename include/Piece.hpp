@@ -5,16 +5,28 @@
 #ifndef CHESS_PIECE_HPP
 #define CHESS_PIECE_HPP
 
+#include <string>
+#include <map>
 #include "SDL.h"
+#include "../src/game/enums/PieceType.hpp"
+#include "../src/game/enums/ColorType.hpp"
 class Piece {
 public:
-    enum Color { WHITE, BLACK };
-    Piece(Color color);
-    virtual ~Piece() = default;
-    Color getColor() const;
-    virtual void display(SDL_Renderer* renderer, int x, int y, int w, int h) const = 0;
+    Piece(ColorType color, PieceType pieceType);
+    ~Piece();
+    ColorType getColor() const;
+    PieceType getPiece() const;
+
+    void display(SDL_Renderer* renderer, PieceType type, int x, int y);
+
 private:
-    Color color;
+    void initializeTexture(SDL_Renderer *renderer, const std::string &path, SDL_Texture *&texture);
+    SDL_Texture *texture;
+    SDL_Renderer* renderer;
+
+    std::string getPieceTexturePath(PieceType type);
+    ColorType color;
+    PieceType piece;
 };
 
 #endif //CHESS_PIECE_HPP

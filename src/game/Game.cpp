@@ -1,13 +1,15 @@
 #include "../../include/Game.hpp"
 #include "../../include/VisualHelper.hpp"
 
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 800;
+const int SCREEN_WIDTH = 740;
+const int SCREEN_HEIGHT = 740;
 
 Game::Game(SDL_Renderer* renderer)
         : board(renderer),
-          visualHelper(VisualHelper::getInstance()),
-          isGameRunning(false) {}
+        renderer(renderer),
+        isGameRunning(false) {}
+
+
 
 void Game::start() {
     gameLoop();
@@ -24,7 +26,7 @@ void Game::gameLoop() {
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
         SDL_RenderClear(renderer);
 
         board.display();

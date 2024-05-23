@@ -2,8 +2,8 @@
 #include <iostream>
 #include "../include/Game.hpp"
 
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 720;
+const int SCREEN_WIDTH = 740;
+const int SCREEN_HEIGHT = 740;
 
 int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
@@ -11,13 +11,9 @@ int main(int argc, char* argv[]) {
                                           SDL_WINDOWPOS_UNDEFINED,
                                           SDL_WINDOWPOS_UNDEFINED,
                                           SCREEN_WIDTH, SCREEN_HEIGHT,
-                                          SDL_WINDOW_SHOWN);
+                                          SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    // Initialize VisualHelper singleton
-    VisualHelper& visualHelper = VisualHelper::getInstance(); // Call getInstance without arguments
-
-    // Create Game instance passing the renderer and VisualHelper
     Game game(renderer);
     game.start();
 

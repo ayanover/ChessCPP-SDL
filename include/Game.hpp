@@ -13,8 +13,9 @@ private:
     void gameLoop();
     SDL_Renderer* renderer;
     Board board;
+
     bool isGameRunning;
-    VisualHelper& visualHelper;
+
 };
 
 #endif // GAME_HPP
