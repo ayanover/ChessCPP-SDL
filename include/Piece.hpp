@@ -7,26 +7,37 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include "SDL.h"
 #include "../src/game/enums/PieceType.hpp"
 #include "../src/game/enums/ColorType.hpp"
 class Piece {
 public:
-    Piece(ColorType color, PieceType pieceType);
+    Piece(ColorType colorType, PieceType pieceType, SDL_Renderer* renderer, int x, int y);
+    Piece(Piece& other);
     ~Piece();
+
     ColorType getColor() const;
     PieceType getPiece() const;
+    int getPosX() const;
+    int getPosY() const;
+    void setPosX(int x);
+    void setPosY(int y);
+    bool hasMoved = false;
 
-    void display(SDL_Renderer* renderer, PieceType type, int x, int y);
+    void display(SDL_Renderer* renderer, int x, int y);
+    std::vector<std::pair<int, int>> calculatePossibleMoves();
 
 private:
-    void initializeTexture(SDL_Renderer *renderer, const std::string &path, SDL_Texture *&texture);
-    SDL_Texture *texture;
+    void initializeTexture(const std::string &path);
+    SDL_Texture *texture{};
     SDL_Renderer* renderer;
 
-    std::string getPieceTexturePath(PieceType type);
+    std::string getPieceTexturePath();
     ColorType color;
     PieceType piece;
+    int posX;
+    int posY;
 };
 
 #endif //CHESS_PIECE_HPP

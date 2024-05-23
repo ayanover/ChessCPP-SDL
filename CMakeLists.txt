@@ -19,6 +19,9 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/game/enums/GameState.hpp
         src/utils/VisualHelper.cpp
         include/VisualHelper.hpp
+        include/SDL_Helper.hpp
+        include/MoveHelper.hpp
+        src/utils/MoveHelper.cpp
 )
 
 # --- SDL2 SETUP ---
