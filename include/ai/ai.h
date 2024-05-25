@@ -9,7 +9,7 @@
 #include "../Board.hpp"
 
 void botMove(Board& board);
-std::pair<int, std::pair<std::pair<int, int>, std::pair<int, int>>> minimax(Board board, int depth, bool isMaximizingPlayer);
+std::pair<int, std::pair<std::pair<int, int>, std::pair<int, int>>> minimax(Board& board, int depth, bool isMaximizingPlayer);
 
 
 #endif //CHESS_AI_H

@@ -22,6 +22,9 @@ add_executable(${PROJECT_NAME} src/main.cpp
         include/SDL_Helper.hpp
         include/MoveHelper.hpp
         src/utils/MoveHelper.cpp
+        include/BoardManager.hpp
+        src/utils/BoardManager.cpp
+        include/RendererManager.hpp
 )
 
 # --- SDL2 SETUP ---

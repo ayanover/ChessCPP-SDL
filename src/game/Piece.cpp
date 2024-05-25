@@ -3,13 +3,12 @@
 //
 #include <iostream>
 #include "../../include/Piece.hpp"
-#include "../../include/MoveHelper.hpp"
 #include "../../include/Game.hpp"
 #include <SDL_image.h>
 
 
-Piece::Piece(ColorType colorType, PieceType pieceType, SDL_Renderer* renderer, int x, int y)
-        : color(colorType), piece(pieceType), renderer(renderer) {
+Piece::Piece(ColorType colorType, PieceType pieceType, Board& parentBoard, int x, int y)
+        : color(colorType), piece(pieceType), parentBoard(parentBoard), renderer(parentBoard.getRenderer()){
     posX = x;
     posY = y;
     std::string path = getPieceTexturePath();
@@ -17,10 +16,15 @@ Piece::Piece(ColorType colorType, PieceType pieceType, SDL_Renderer* renderer, i
     initializeTexture(path);
 }
 
-Piece::Piece(Piece& other) : color(other.color), piece(other.piece), renderer(other.renderer), posX(other.posX), posY(other.posY), hasMoved(other.hasMoved) {
-    initializeTexture(other.getPieceTexturePath());
+Piece::Piece(const Piece& other)
+        : color(other.color), piece(other.piece), parentBoard(other.parentBoard), renderer(other.renderer),
+          posX(other.posX), posY(other.posY), hasMoved(other.hasMoved) {
+    initializeTexture(getPieceTexturePath());
 }
 Piece::~Piece(){
+    if(texture != nullptr){
+        SDL_DestroyTexture(texture);
+    }
 }
 int Piece::getPosX() const {
     return posX;
@@ -48,48 +52,57 @@ PieceType Piece::getPiece() const {
 
 void Piece::initializeTexture(const std::string &path) {
     IMG_Init(IMG_INIT_PNG); // Initialize PNG loading
-    texture = IMG_LoadTexture(renderer, path.c_str());
+    SDL_Surface* loadedSurface = IMG_Load(path.c_str());
+    if (loadedSurface == nullptr) {
+        printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError());
+        return;
+    }
+    texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
     if (texture == nullptr) {
         std::cerr << "Failed to load texture: " << path << std::endl;
         std::cerr << "SDL Error: " << SDL_GetError() << std::endl;
         exit(1);
     }
+    SDL_FreeSurface(loadedSurface);
 }
 
 
 void Piece::display(SDL_Renderer* renderer, int x, int y) {
     if (texture) {
-        SDL_Rect dstrect = { x, y, 75, 75 }; // Example destination rectangle
+        SDL_Rect dstrect = { x, y, 80, 80 }; // Example destination rectangle
         SDL_RenderCopy(renderer, texture, NULL, &dstrect);
     }
 }
 
 std::string Piece::getPieceTexturePath() {
     std::string path = "C:/Users/rexiv/CLionProjects/Chess/assets/Pieces/";
-    switch(piece) {
-        case PieceType::PAWN:
-            path +="Pawn";
-            break;
-        case PieceType::KNIGHT:
-            path +="Knight";
-            break;
-        case PieceType::BISHOP:
-            path +="Bishop";
-            break;
-        case PieceType::ROOK:
-            path +="Rook";
-            break;
-        case PieceType::QUEEN:
-            path +="Queen";
-            break;
-        case PieceType::KING:
-            path +="King";
-            break;
-        default: return "";
-    }
+
 
     if(color == ColorType::BLACK) {
-        path += "_B";
+        path += "black-";
+    } else {
+        path += "white-";
+    }
+    switch(piece) {
+        case PieceType::PAWN:
+            path +="pawn";
+            break;
+        case PieceType::KNIGHT:
+            path +="knight";
+            break;
+        case PieceType::BISHOP:
+            path +="bishop";
+            break;
+        case PieceType::ROOK:
+            path +="rook";
+            break;
+        case PieceType::QUEEN:
+            path +="queen";
+            break;
+        case PieceType::KING:
+            path +="king";
+            break;
+        default: return "";
     }
 
     path+= ".png";
@@ -97,21 +110,31 @@ std::string Piece::getPieceTexturePath() {
     return path;
 }
 
-std::vector<std::pair<int, int>> Piece::calculatePossibleMoves(){
+void Piece::setHasDoubleMoved(int oldX, int oldY, int newX, int newY) {
+    if (piece == PieceType::PAWN && abs(newY - oldY) == 2) {
+        hasDoubleMoved = true;
+    } else {
+        hasDoubleMoved = false;
+    }
+}
 
+std::vector<std::pair<int, int>> Piece::calculatePossibleMoves(Board& board ,bool isRealMove) {
+    if(color != Game::playerToMove && isRealMove){
+        return {};
+    }
     switch (piece){
         case PieceType::PAWN:
-            return calculatePawnMoves(*this);
+            return calculatePawnMoves(*this, board, isRealMove);
         case PieceType::KNIGHT:
-            return calculateKnightMoves(*this);
+            return calculateKnightMoves(*this, board, isRealMove);
         case PieceType::BISHOP:
-            return calculateBishopMoves(*this);
+            return calculateBishopMoves(*this, board, isRealMove);
         case PieceType::ROOK:
-            return calculateRookMoves(*this);
+            return calculateRookMoves(*this, board, isRealMove);
         case PieceType::QUEEN:
-            return calculateQueenMoves(*this);
+            return calculateQueenMoves(*this, board, isRealMove);
         case PieceType::KING:
-            return calculateKingMoves(*this);
+            return calculateKingMoves(*this, board, isRealMove);
         default:
             return {};
     }

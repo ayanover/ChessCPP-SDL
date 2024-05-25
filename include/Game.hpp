@@ -6,10 +6,11 @@
 
 class Game {
 public:
-    Game(SDL_Renderer* renderer);
+    explicit Game(SDL_Renderer* renderer);
     void start();
     static ColorType PlayerColor;
     static ColorType playerToMove;
+
 
 private:
     bool isMoveInitialized = false;
@@ -17,7 +18,7 @@ private:
     std::vector<std::pair<int, int>> possibleMoves;
     void gameLoop();
     SDL_Renderer* renderer;
-    Board board;
+    Board *board;
 
     bool isGameRunning;
 

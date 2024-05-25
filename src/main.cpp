@@ -1,9 +1,10 @@
 #include <SDL.h>
 #include <iostream>
 #include "../include/Game.hpp"
+#include "../include/RendererManager.hpp"
 
-const int SCREEN_WIDTH = 740;
-const int SCREEN_HEIGHT = 740;
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 640;
 
 int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
@@ -12,7 +13,10 @@ int main(int argc, char* argv[]) {
                                           SDL_WINDOWPOS_UNDEFINED,
                                           SCREEN_WIDTH, SCREEN_HEIGHT,
                                           SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    RendererManager::getInstance().setRenderer(renderer);
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
+
 
     Game game(renderer);
     game.start();

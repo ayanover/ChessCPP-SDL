@@ -1,7 +1,3 @@
-//
-// Created by rexiv on 17.05.2024.
-//
-
 #ifndef BOARD_HPP
 #define BOARD_HPP
 
@@ -11,30 +7,38 @@
 #include <memory>
 #include "Piece.hpp"
 
+class Piece;
+
 class Board {
 public:
+    // Constructor taking the renderer as a parameter
     explicit Board(SDL_Renderer* renderer);
-    Board(const Board& other);
+    Board* clone() const;
     ~Board();
+
     void initialize();
-    void initializeCopy();
     void display();
-    static Piece* getPieceAt(int x, int y);
-    Piece* getPiece(int x, int y);
+    SDL_Renderer* getRenderer();
+    Piece* getPieceAt(int x, int y);
+
     void displayPossibleMoves(const std::vector<std::pair<int, int>>& possibleMoves);
-    bool movePiece(int oldX, int oldY, int newX, int newY);
-    bool movePiece_(int oldX, int oldY, int newX, int newY);
-    bool isKingUnderAttack(ColorType kingColor);
-    bool isGameOver();
+    bool movePiece(int oldX, int oldY, int newX, int newY, bool isReal = false);
+    bool tempMovePiece(int oldX, int oldY, int newX, int newY);
+
+    bool isMoveSafe(int oldX, int oldY, int newX, int newY, ColorType kingColor);
+    bool isKingInCheck(ColorType kingColor, Board& board);
+    bool isKingInCheckmate(ColorType kingColor, Board& board);
+    bool isKingEndangered = false;
     int getScore();
 
+    // Removed the copy constructor as it might not make sense with the new design
+    Board(const Board& other);
+
 private:
+    std::pair<int, int> getKingPosition(ColorType kingColor, Board& board);
+
     SDL_Renderer* renderer;
-    SDL_Texture* whiteTileTexture;
-    SDL_Texture* blackTileTexture;
-    static std::vector<std::vector<std::unique_ptr<Piece>>> board;
-    std::vector<std::vector<std::unique_ptr<Piece>>> board_;
-    SDL_Texture* loadTexture(const std::string& path);
+    std::vector<std::vector<std::unique_ptr<Piece>>> board;
 };
 
 #endif // BOARD_HPP
