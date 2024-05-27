@@ -7,9 +7,10 @@
 
 
 #include "../Board.hpp"
+#include "../Move.hpp"
 
-void botMove(Board& board);
-std::pair<int, std::pair<std::pair<int, int>, std::pair<int, int>>> minimax(Board& board, int depth, bool isMaximizingPlayer);
-
+std::vector<Move> generateMoves(Board& board);
+void botMove(Board& board, int depth);
+int minimax(Board& board, int depth, int alpha, int beta, bool isMaximizingPlayer);
 
 #endif //CHESS_AI_H

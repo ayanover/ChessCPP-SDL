@@ -24,7 +24,7 @@ void Game::gameLoop() {
 
     while (running) {
         if(playerToMove != PlayerColor){
-            botMove(*board);
+            botMove(*board, 2);
         }
         while (SDL_PollEvent(&e) != 0) {
             switch (e.type) {

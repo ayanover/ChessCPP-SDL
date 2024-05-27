@@ -6,6 +6,7 @@
 #include <string>
 #include <memory>
 #include "Piece.hpp"
+#include "Move.hpp"
 
 class Piece;
 
@@ -28,6 +29,8 @@ public:
     bool isMoveSafe(int oldX, int oldY, int newX, int newY, ColorType kingColor);
     bool isKingInCheck(ColorType kingColor, Board& board);
     bool isKingInCheckmate(ColorType kingColor, Board& board);
+    bool isGameOver();
+    std::vector<Move> generateMoves();
     bool isKingEndangered = false;
     int getScore();
 

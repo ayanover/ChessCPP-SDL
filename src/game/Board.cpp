@@ -119,6 +119,8 @@ bool Board::movePiece(int oldX, int oldY, int newX, int newY, bool isReal) {
         return false;
     }
 }
+
+
 bool Board::tempMovePiece(int oldX, int oldY, int newX, int newY){
     Piece* piece = getPieceAt(oldX, oldY);
     if (piece == nullptr) {
@@ -140,6 +142,10 @@ bool Board::isMoveSafe(int oldX, int oldY, int newX, int newY, ColorType kingCol
         }
     }
     return true; // The move is safe
+}
+
+bool Board::isGameOver() {
+    return (isKingInCheckmate(ColorType::BLACK, *this) || isKingInCheckmate(ColorType::WHITE, *this));
 }
 
 void Board::display() {
@@ -241,6 +247,23 @@ std::pair<int, int> Board::getKingPosition(ColorType kingColor, Board& board_) {
     return {-1, -1};
 }
 
+std::vector<Move> Board::generateMoves() {
+    std::vector<Move> moves;
+
+    for (int y = 0; y < 8; ++y) {
+        for (int x = 0; x < 8; ++x) {
+            Piece *piece = getPieceAt(x, y);
+            if (piece != nullptr && piece->getColor() == ColorType::BLACK) {
+                for (const auto &move: piece->calculatePossibleMoves(*this)) {
+                    if (move.first >= 0 && move.first < 8 && move.second >= 0 && move.second < 8) {
+                        moves.emplace_back(std::pair<int, int>(x, y), std::pair<int, int>(move.first, move.second));
+                    }
+                }
+            }
+        }
+    }
+    return moves;
+}
 
 int Board::getScore() {
     int score = 0;

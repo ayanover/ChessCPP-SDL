@@ -25,6 +25,8 @@ add_executable(${PROJECT_NAME} src/main.cpp
         include/BoardManager.hpp
         src/utils/BoardManager.cpp
         include/RendererManager.hpp
+        src/game/Move.cpp
+        include/Move.hpp
 )
 
 # --- SDL2 SETUP ---
