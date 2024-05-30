@@ -7,7 +7,8 @@
 
 enum class ColorType {
     WHITE,
-    BLACK
+    BLACK,
+    NONE
 };
 
 #endif //CHESS_COLORTYPE_HPP

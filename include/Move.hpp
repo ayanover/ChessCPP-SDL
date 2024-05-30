@@ -10,5 +10,5 @@ public:
     std::pair<int,int> from;
     std::pair<int,int> to;
 
-    Move(std::pair<int,int> f, std::pair<int,int> t) : from(f), to(t) {}
+    Move(std::pair<int,int> f, std::pair<int,int> t) : from(std::move(f)), to(std::move(t)) {}
 };

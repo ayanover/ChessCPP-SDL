@@ -35,11 +35,15 @@ void Game::gameLoop() {
                     int x, y;
                     SDL_GetMouseState(&x, &y);
                     if(isMoveInitialized){
-                        if(board->movePiece(clickedPiece->getPosX(), clickedPiece->getPosY(),x / 80, y / 80, true)){
+                        if(clickedPiece->getPosX() == x / 80 && clickedPiece->getPosY()==y/80){
+                            isMoveInitialized = false;
+                            possibleMoves.clear();
+                        }
+                        else if(board->movePiece(clickedPiece->getPosX(), clickedPiece->getPosY(),x / 80, y / 80, true)){
                             isMoveInitialized = false;
                             possibleMoves.clear();
                             if(playerToMove == ColorType::WHITE){
-                                playerToMove = ColorType::BLACK;
+                                 playerToMove = ColorType::BLACK;
                             }
                             else{
                                 playerToMove = ColorType::WHITE;

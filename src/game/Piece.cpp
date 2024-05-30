@@ -75,7 +75,7 @@ void Piece::display(SDL_Renderer* renderer, int x, int y) {
 }
 
 std::string Piece::getPieceTexturePath() {
-    std::string path = "C:/Users/rexiv/CLionProjects/Chess/assets/Pieces/";
+    std::string path = "../assets/Pieces/";
 
 
     if(color == ColorType::BLACK) {
@@ -120,7 +120,7 @@ void Piece::setHasDoubleMoved(int oldX, int oldY, int newX, int newY) {
 
 std::vector<std::pair<int, int>> Piece::calculatePossibleMoves(Board& board ,bool isRealMove) {
     if(color != Game::playerToMove && isRealMove){
-        return {};
+        //return {};
     }
     switch (piece){
         case PieceType::PAWN:

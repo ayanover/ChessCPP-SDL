@@ -6,6 +6,7 @@
 #define CHESS_PIECETYPE_HPP
 
 enum class PieceType {
+    EMPTY,
     PAWN,
     ROOK,
     KNIGHT,

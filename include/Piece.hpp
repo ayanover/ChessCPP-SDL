@@ -40,6 +40,7 @@ private:
     SDL_Renderer* renderer;
     Board& parentBoard;
 
+
     std::string getPieceTexturePath();
     ColorType color;
     PieceType piece;

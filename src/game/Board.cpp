@@ -14,9 +14,12 @@ Board::Board(SDL_Renderer* renderer) : renderer(renderer) {
 
 Board::Board(const Board& other) : renderer(other.renderer) {
     board.resize(8);
+    pieceBoard.resize(8);
     for (int y = 0; y < 8; ++y) {
         board[y].resize(8);
+        pieceBoard[y].resize(8);
         for (int x = 0; x < 8; ++x) {
+            pieceBoard[y][x] = other.pieceBoard[y][x];
             if (other.board[y][x] != nullptr) {
                 board[y][x] = std::make_unique<Piece>(*other.board[y][x]); // Deep copy of Piece
             } else {
@@ -37,7 +40,11 @@ Board::~Board() {
 
 void Board::initialize() {
     board.resize(8);
+    pieceBoard.resize(8);
     for (auto& inner : board) {
+        inner.resize(8);
+    }
+    for (auto& inner : pieceBoard) {
         inner.resize(8);
     }
 
@@ -62,6 +69,20 @@ void Board::initialize() {
     board[7][5] = std::make_unique<Piece>(ColorType::WHITE, PieceType::BISHOP, *this, 5, 7);
     board[7][6] = std::make_unique<Piece>(ColorType::WHITE, PieceType::KNIGHT, *this, 6, 7);
     board[7][7] = std::make_unique<Piece>(ColorType::WHITE, PieceType::ROOK, *this, 7, 7);
+
+    for (int y = 0; y < 8; ++y) {
+        for (int x = 0; x < 8; ++x) {
+            Piece *piece = getPieceAt(x, y);
+            if(piece == nullptr){
+                pieceBoard[x][y].first = PieceType::EMPTY;
+                pieceBoard[x][y].second = ColorType::NONE;
+            }
+            else{
+                pieceBoard[x][y].first = piece->getPiece();
+                pieceBoard[x][y].second = piece->getColor();
+            }
+        }
+    }
 }
 
 Piece* Board::getPieceAt(int x, int y) {
@@ -75,14 +96,23 @@ SDL_Renderer* Board::getRenderer(){
     return renderer;
 };
 
+void Board::updatePieceLocation(int oldX, int oldY, int newX, int newY){
+    pieceBoard[newY][newX].first = pieceBoard[oldY][oldX].first;
+    pieceBoard[newY][newX].second = pieceBoard[oldY][oldX].second;
+    pieceBoard[oldY][oldX].first = PieceType::EMPTY;
+    pieceBoard[oldY][oldX].second = ColorType::NONE;
+}
+
 bool Board::movePiece(int oldX, int oldY, int newX, int newY, bool isReal) {
     Piece* piece = getPieceAt(oldX, oldY);
     if (piece == nullptr) {
         return false;
     }
 
+
     std::vector<std::pair<int, int>> possibleMoves = piece->calculatePossibleMoves(*this);
     if (std::find(possibleMoves.begin(), possibleMoves.end(), std::make_pair(newX, newY)) != possibleMoves.end()) {
+        tempPieces.push(std::move(board[newY][newX]));
         // Check if the move is a castling move
         if (piece->getPiece() == PieceType::KING && abs(newX - oldX) == 2) {
             int rookX = (newX > oldX) ? 7 : 0; // The rook is on the right for king-side castling and on the left for queen-side castling
@@ -90,6 +120,7 @@ bool Board::movePiece(int oldX, int oldY, int newX, int newY, bool isReal) {
             int step = (newX > oldX) ? 1 : -1;
             // Move the rook
             board[oldY][newX - step] = std::move(board[oldY][rookX]);
+            updatePieceLocation(oldX, oldY, newX, newY);
             rook->setPosX(newX - step);
             rook->setPosY(oldY);
             rook->hasMoved = true;
@@ -97,6 +128,7 @@ bool Board::movePiece(int oldX, int oldY, int newX, int newY, bool isReal) {
 
         // Move the piece
         board[newY][newX] = std::move(board[oldY][oldX]);
+        updatePieceLocation(oldX, oldY, newX, newY);
         piece->setPosX(newX);
         piece->setPosY(newY);
         piece->hasMoved = true;
@@ -126,22 +158,56 @@ bool Board::tempMovePiece(int oldX, int oldY, int newX, int newY){
     if (piece == nullptr) {
         return false;
     }
-    board[newY][newX] = std::move(board[oldY][oldX]);
-    piece->setPosX(newX);
-    piece->setPosY(newY);
-    piece->hasMoved = true;
-    piece->setHasDoubleMoved(oldX, oldY, newX, newY);
-    return true;
-}
-
-bool Board::isMoveSafe(int oldX, int oldY, int newX, int newY, ColorType kingColor) {
-    std::unique_ptr<Board> tempBoard = std::unique_ptr<Board>(this->clone());
-    if (tempBoard->tempMovePiece(oldX, oldY, newX, newY)) {
-        if (tempBoard->isKingInCheck(kingColor, *tempBoard)) {
+        if(!( (newY>=0 && newY<8) && newX>=0 && newX<8 )){
             return false;
         }
+        tempPieces.push(std::move(board[newY][newX]));
+        board[newY][newX] = std::move(board[oldY][oldX]);
+        piece->setPosX(newX);
+        piece->setPosY(newY);
+        piece->hasMoved = true;
+        piece->setHasDoubleMoved(oldX, oldY, newX, newY);
+        return true;
+}
+
+bool Board::isMoveSafe(int oldX, int oldY, int newX, int newY, ColorType kingColor, bool isReal) {
+
+    if(isReal){
+        std::unique_ptr<Board> tempBoard = std::unique_ptr<Board>(this->clone());
+        if (tempBoard->tempMovePiece(oldX, oldY, newX, newY)) {
+            if (tempBoard->isKingInCheck(kingColor, *tempBoard)) {
+                return false;
+            }
+        }
+        return true;
     }
-    return true; // The move is safe
+    else{
+        bool isInCheck;
+        tempMovePiece(oldX, oldY, newX, newY);
+        if(isKingInCheck(kingColor, *this)){
+            isInCheck = false;
+        } else{
+            isInCheck = true;
+        }
+        revertMove(oldX, oldY, newX, newY);
+        return isInCheck;
+    }
+}
+
+void Board::revertMove(int oldX, int oldY, int newX, int newY){
+    if(!( (newY>=0 && newY<8) && newX>=0 && newX<8 )){
+        return;
+    }
+    board[oldY][oldX] = std::move(board[newY][newX]);
+    Piece* piece = getPieceAt(oldX, oldY);
+    if (piece != nullptr) {
+        piece->setPosX(oldX);
+        piece->setPosY(oldY);
+        piece->hasMoved = false;
+        piece->hasDoubleMoved = false;
+    }
+    board[newY][newX] = std::move(tempPieces.top());
+    tempPieces.pop();
 }
 
 bool Board::isGameOver() {
@@ -197,8 +263,7 @@ bool Board::isKingInCheck(ColorType kingColor, Board& board_) {
         for (int x = 0; x < 8; ++x) {
             Piece* piece = getPieceAt(x, y);
             if (piece != nullptr && piece->getColor() == opponentColor) {
-                std::vector<std::pair<int, int>> possibleMoves = piece->calculatePossibleMoves(board_, false);
-                Board& tempBoardRef = board_;
+                std::vector<std::pair<int, int>> possibleMoves = piece->calculatePossibleMoves(*this, false);
                 if (std::find(possibleMoves.begin(), possibleMoves.end(), kingPos) != possibleMoves.end()) {
                     return true;
                 }
@@ -267,118 +332,42 @@ std::vector<Move> Board::generateMoves() {
 
 int Board::getScore() {
     int score = 0;
-    const int pieceValues[6] = {1, 3, 3, 5, 9, 100}; // Pawn, Knight, Bishop, Rook, Queen, King
-    const int pawnTable[8][8] = {
-            {0, 0, 0, 0, 0, 0, 0, 0},
-            {-5, -5, -5, -5, -5, -5, -5, -5},
-            {-1, -1, -2, -3, -3, -2, -1, -1},
-            {-1, -1, -2, -3, -3, -2, -1, -1},
-            {-1, -1, -2, -3, -3, -2, -1, -1},
-            {-1, -1, -2, -3, -3, -2, -1, -1},
-            {-1, -1, -2, -3, -3, -2, -1, -1},
-            {0, 0, 0, 0, 0, 0, 0, 0}
-    };
-
-    const int knightTable[8][8] = {
-            {5, 4, 3, 3, 3, 3, 4, 5},
-            {4, 2, 0, -1, -1, 0, 2, 4},
-            {3, 0, -1, -2, -2, -1, 0, 3},
-            {3, -1, -2, -3, -3, -2, -1, 3},
-            {3, 0, -2, -3, -3, -2, 0, 3},
-            {3, -1, -1, -2, -2, -1, -1, 3},
-            {4, 2, 0, 0, 0, 0, 2, 4},
-            {5, 4, 3, 3, 3, 3, 4, 5}
-    };
-
-    const int bishopTable[8][8] = {
-            {2, 1, 1, 1, 1, 1, 1, 2},
-            {1, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, -1, -1, -1, -1, 0, 1},
-            {1, -1, -1, -2, -2, -1, -1, 1},
-            {1, 0, -2, -2, -2, -2, 0, 1},
-            {1, -2, -2, -2, -2, -2, -2, 1},
-            {1, -1, 0, 0, 0, 0, -1, 1},
-            {2, 1, 1, 1, 1, 1, 1, 2}
-    };
-
-    const int rookTable[8][8] = {
-            {0, 0, 0, 0, 0, 0, 0, 0},
-            {0, -1, -1, -1, -1, -1, -1, 0},
-            {1, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 1},
-            {0, 0, 0, -1, -1, 0, 0, 0}
-    };
-
-
-    const int queenTable[8][8] = {
-            {2, 1, 1, 1, 1, 1, 1, 2},
-            {1, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 1},
-            {0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0},
-            {1, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 1},
-            {2, 1, 1, 1, 1, 1, 1, 2}
-    };
-
-    const int kingTable[8][8] = {
-            {-3, -4, -4, -5, -5, -4, -4, -3},
-            {-3, -4, -4, -5, -5, -4, -4, -3},
-            {-3, -4, -4, -5, -5, -4, -4, -3},
-            {-3, -4, -4, -5, -5, -4, -4, -3},
-            {-2, -3, -3, -4, -4, -3, -3, -2},
-            {-1, -2, -2, -2, -2, -2, -2, -1},
-            {2,  2,  0,  0,  0,  0,  2,  2},
-            {2,  3,  1,  0,  0,  1,  3,  2}
-    };
-
+    const int pieceValues[6] = {10, 30, 30, 50, 90, 1000}; // Pawn, Knight, Bishop, Rook, Queen, King
     for (int y = 0; y < 8; ++y) {
         for (int x = 0; x < 8; ++x) {
             Piece* piece = getPieceAt(x, y);
-            if (piece != nullptr) {
+            if(piece != nullptr){
                 int pieceValue = 0;
-                int positionalValue = 0;
                 switch (piece->getPiece()) {
                     case PieceType::PAWN:
                         pieceValue = pieceValues[0];
-                        positionalValue = pawnTable[y][x];
                         break;
                     case PieceType::KNIGHT:
                         pieceValue = pieceValues[1];
-                        positionalValue = knightTable[y][x];
                         break;
                     case PieceType::BISHOP:
                         pieceValue = pieceValues[2];
-                        positionalValue = bishopTable[y][x];
                         break;
                     case PieceType::ROOK:
                         pieceValue = pieceValues[3];
-                        positionalValue = rookTable[y][x];
                         break;
                     case PieceType::QUEEN:
                         pieceValue = pieceValues[4];
-                        positionalValue = queenTable[y][x];
                         break;
                     case PieceType::KING:
                         pieceValue = pieceValues[5];
-                        positionalValue = kingTable[y][x];
                         break;
                     default:
                         break;
                 }
-
                 if (piece->getColor() == ColorType::BLACK) {
                     score -= pieceValue;
-                    score -= positionalValue;
                 } else {
                     score += pieceValue;
-                    score += positionalValue;
                 }
             }
         }
+
     }
 
     return score;

@@ -15,7 +15,7 @@ std::vector<std::pair<int, int>> calculatePawnMoves(const Piece& piece, Board& b
     if(y + direction >= 0 && y + direction < 8 ){
         if(board.getPieceAt(x, y + direction) == nullptr){
             if (isRealMove) {
-                if(board.isMoveSafe(x, y, x, y + direction, piece.getColor())){
+                if(board.isMoveSafe(x, y, x, y + direction, piece.getColor(), false)){
                     moves.push_back({x, y + direction});
                 }
             } else {
@@ -27,7 +27,7 @@ std::vector<std::pair<int, int>> calculatePawnMoves(const Piece& piece, Board& b
     // Pawns can move forward two squares if they haven't moved yet and both squares in front of them are unoccupied.
     if(!piece.hasMoved && board.getPieceAt(x, y + direction) == nullptr && board.getPieceAt(x, y + 2*direction) == nullptr){
         if (isRealMove) {
-            if(board.isMoveSafe(x, y, x, y + direction * 2, piece.getColor())){
+            if(board.isMoveSafe(x, y, x, y + direction * 2, piece.getColor(), false)){
                 moves.push_back({x, y + direction * 2});
             }
         } else {
@@ -38,7 +38,7 @@ std::vector<std::pair<int, int>> calculatePawnMoves(const Piece& piece, Board& b
     // Pawns can capture an enemy piece diagonally forward.
     if(x - 1 >= 0 && board.getPieceAt(x - 1, y + direction) != nullptr && board.getPieceAt(x - 1, y + direction)->getColor() != piece.getColor()){
         if (isRealMove) {
-            if(board.isMoveSafe(x, y, x - 1, y + direction, piece.getColor())){
+            if(board.isMoveSafe(x, y, x - 1, y + direction, piece.getColor(), false)){
                 moves.push_back({x - 1, y + direction});
             }
         } else {
@@ -47,7 +47,7 @@ std::vector<std::pair<int, int>> calculatePawnMoves(const Piece& piece, Board& b
     }
     if(x + 1 < 8 && board.getPieceAt(x + 1, y + direction) != nullptr && board.getPieceAt(x + 1, y + direction)->getColor() != piece.getColor()){
         if (isRealMove) {
-            if(board.isMoveSafe(x, y, x + 1, y + direction, piece.getColor())){
+            if(board.isMoveSafe(x, y, x + 1, y + direction, piece.getColor(), false)){
                 moves.push_back({x + 1, y + direction});
             }
         } else {
@@ -63,7 +63,7 @@ std::vector<std::pair<int, int>> calculatePawnMoves(const Piece& piece, Board& b
                 Piece* adjPiece = board.getPieceAt(adjFile, y);
                 if (adjPiece != nullptr && adjPiece->getColor() != piece.getColor() && adjPiece->getPiece() == PieceType::PAWN && adjPiece->hasDoubleMoved == true) {
                     if (isRealMove) {
-                        if(board.isMoveSafe(x, y, x, y + direction, piece.getColor())){
+                        if(board.isMoveSafe(x, y, x, y + direction, piece.getColor(), false)){
                             moves.push_back({x, y + direction});
                         }
                     } else {
@@ -89,7 +89,7 @@ std::vector<std::pair<int, int>> calculateKnightMoves(const Piece& piece, Board&
             Piece* destinationPiece = board.getPieceAt(newX, newY);
             if (destinationPiece == nullptr || destinationPiece->getColor() != piece.getColor()) {
                 if (isRealMove) {
-                    if(board.isMoveSafe(x, y, newX, newY, piece.getColor())){
+                    if(board.isMoveSafe(x, y, newX, newY, piece.getColor(), false)){
                         moves.push_back({newX, newY});
                     }
                 } else {
@@ -116,7 +116,7 @@ std::vector<std::pair<int, int>> calculateBishopMoves(const Piece& piece, Board&
                 if(board.getPieceAt(newX, newY) != nullptr){
                     if(board.getPieceAt(newX, newY)->getColor() != piece.getColor()){
                         if (isRealMove) {
-                            if(board.isMoveSafe(x, y, newX, newY, piece.getColor())){
+                            if(board.isMoveSafe(x, y, newX, newY, piece.getColor(), false)){
                                 moves.push_back({newX, newY});
                             }
                         } else {
@@ -147,7 +147,7 @@ std::vector<std::pair<int, int>> calculateRookMoves(const Piece& piece, Board& b
                 if(board.getPieceAt(newX, newY) != nullptr){
                     if(board.getPieceAt(newX, newY)->getColor() != piece.getColor()){
                         if (isRealMove) {
-                            if(board.isMoveSafe(x, y, newX, newY, piece.getColor())){
+                            if(board.isMoveSafe(x, y, newX, newY, piece.getColor(), false)){
                                 moves.push_back({newX, newY});
                             }
                         } else {
@@ -156,7 +156,13 @@ std::vector<std::pair<int, int>> calculateRookMoves(const Piece& piece, Board& b
                     }
                     break;
                 }
-                moves.push_back({newX, newY});
+                if (isRealMove) {
+                    if(board.isMoveSafe(x, y, newX, newY, piece.getColor(), false)){
+                        moves.push_back({newX, newY});
+                    }
+                } else {
+                    moves.push_back({newX, newY});
+                }
             }
         }
     }
@@ -185,7 +191,7 @@ std::vector<std::pair<int, int>> calculateKingMoves(const Piece& piece, Board& b
             Piece* destinationPiece = board.getPieceAt(newX, newY);
             if (destinationPiece == nullptr || destinationPiece->getColor() != piece.getColor()) {
                 if (isRealMove) {
-                    if(board.isMoveSafe(x, y, newX, newY, piece.getColor())){
+                    if(board.isMoveSafe(x, y, newX, newY, piece.getColor(), false)){
                         moves.push_back({newX, newY});
                     }
                 } else {
@@ -200,8 +206,12 @@ std::vector<std::pair<int, int>> calculateKingMoves(const Piece& piece, Board& b
         // King-side castling
         if (board.getPieceAt(x + 3, y) != nullptr && !board.getPieceAt(x + 3, y)->hasMoved) {
             if (board.getPieceAt(x + 1, y) == nullptr && board.getPieceAt(x + 2, y) == nullptr) {
-                if (!board.isKingInCheck(piece.getColor(), board) && board.isMoveSafe(x, y, x + 1, y, piece.getColor()) && board.isMoveSafe(x, y, x + 2, y, piece.getColor())) {
-                    moves.push_back({x + 2, y});
+                if (isRealMove) {
+                    if(!board.isKingInCheck(piece.getColor(), board) && board.isMoveSafe(x, y, x + 1, y, piece.getColor(), false)){
+                        moves.push_back({x + 1, y});
+                    }
+                } else {
+                    moves.push_back({x + 1 , y});
                 }
             }
         }
@@ -209,7 +219,11 @@ std::vector<std::pair<int, int>> calculateKingMoves(const Piece& piece, Board& b
         // Queen-side castling
         if (board.getPieceAt(x - 4, y) != nullptr && !board.getPieceAt(x - 4, y)->hasMoved) {
             if (board.getPieceAt(x - 1, y) == nullptr && board.getPieceAt(x - 2, y) == nullptr && board.getPieceAt(x - 3, y) == nullptr) {
-                if (!board.isKingInCheck(piece.getColor(), board) && board.isMoveSafe(x, y, x - 1, y, piece.getColor()) && board.isMoveSafe(x, y, x - 2, y, piece.getColor())) {
+                if (isRealMove) {
+                    if(!board.isKingInCheck(piece.getColor(), board) && board.isMoveSafe(x, y, x - 2, y, piece.getColor(), false)){
+                        moves.push_back({x - 2, y});
+                    }
+                } else {
                     moves.push_back({x - 2, y});
                 }
             }
