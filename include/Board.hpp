@@ -44,7 +44,7 @@ private:
     std::pair<int, int> getKingPosition(ColorType kingColor, Board& board);
 
     std::unique_ptr<Piece> enPassantPiece = nullptr;
-    std::stack<std::unique_ptr<Piece>> tempPieces;
+    std::stack<std::pair<std::unique_ptr<Piece>, bool>> tempPieces;
     SDL_Renderer* renderer;
     std::vector<std::vector<std::unique_ptr<Piece>>> board;
     std::vector<std::vector<std::pair<PieceType, ColorType>>> pieceBoard;

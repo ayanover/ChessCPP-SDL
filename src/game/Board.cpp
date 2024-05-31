@@ -112,7 +112,7 @@ bool Board::movePiece(int oldX, int oldY, int newX, int newY, bool isReal) {
 
     std::vector<std::pair<int, int>> possibleMoves = piece->calculatePossibleMoves(*this);
     if (std::find(possibleMoves.begin(), possibleMoves.end(), std::make_pair(newX, newY)) != possibleMoves.end()) {
-        tempPieces.push(std::move(board[newY][newX]));
+        tempPieces.push({std::move(board[newY][newX]), piece->hasMoved});
         // Check if the move is a castling move
         if (piece->getPiece() == PieceType::KING && abs(newX - oldX) == 2) {
             int rookX = (newX > oldX) ? 7 : 0; // The rook is on the right for king-side castling and on the left for queen-side castling
@@ -161,7 +161,7 @@ bool Board::tempMovePiece(int oldX, int oldY, int newX, int newY){
         if(!( (newY>=0 && newY<8) && newX>=0 && newX<8 )){
             return false;
         }
-        tempPieces.push(std::move(board[newY][newX]));
+        tempPieces.push({std::move(board[newY][newX]), piece->hasMoved});
         board[newY][newX] = std::move(board[oldY][oldX]);
         piece->setPosX(newX);
         piece->setPosY(newY);
@@ -203,10 +203,10 @@ void Board::revertMove(int oldX, int oldY, int newX, int newY){
     if (piece != nullptr) {
         piece->setPosX(oldX);
         piece->setPosY(oldY);
-        piece->hasMoved = false;
+        piece->hasMoved = tempPieces.top().second;
         piece->hasDoubleMoved = false;
     }
-    board[newY][newX] = std::move(tempPieces.top());
+    board[newY][newX] = std::move(tempPieces.top().first);
     tempPieces.pop();
 }
 
@@ -367,7 +367,6 @@ int Board::getScore() {
                 }
             }
         }
-
     }
 
     return score;

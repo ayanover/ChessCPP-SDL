@@ -208,10 +208,10 @@ std::vector<std::pair<int, int>> calculateKingMoves(const Piece& piece, Board& b
             if (board.getPieceAt(x + 1, y) == nullptr && board.getPieceAt(x + 2, y) == nullptr) {
                 if (isRealMove) {
                     if(!board.isKingInCheck(piece.getColor(), board) && board.isMoveSafe(x, y, x + 1, y, piece.getColor(), false)){
-                        moves.push_back({x + 1, y});
+                        moves.push_back({x + 2, y});
                     }
                 } else {
-                    moves.push_back({x + 1 , y});
+                    moves.push_back({x + 2, y});
                 }
             }
         }

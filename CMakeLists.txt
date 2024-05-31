@@ -39,6 +39,7 @@ find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 
+
 # --- SDL2_ttf SETUP ---
 find_package(SDL2_ttf REQUIRED)
 if(SDL2_TTF_FOUND)
