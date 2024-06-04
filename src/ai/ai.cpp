@@ -1,7 +1,5 @@
 #include <utility>
-#include <limits>
 #include <algorithm>
-#include <iostream>
 #include "../../include/ai/ai.h"
 #include "../../include/Game.hpp"
 
@@ -87,5 +85,5 @@ Move findBestMove(Board& board, int depth) {
 void botMove(Board& board, int depth) {
     Move bestMove = findBestMove(board, depth);
     board.movePiece(bestMove.from.first, bestMove.from.second, bestMove.to.first, bestMove.to.second);
-    Game::playerToMove = ColorType::WHITE;
+    Game::setPlayerToMove(ColorType::WHITE);
 }

@@ -8,7 +8,7 @@
 
 
 Piece::Piece(ColorType colorType, PieceType pieceType, Board& parentBoard, int x, int y)
-        : color(colorType), piece(pieceType), parentBoard(parentBoard), renderer(parentBoard.getRenderer()){
+        : color(colorType), piece(pieceType), parentBoard(parentBoard), m_Renderer(parentBoard.getRenderer()){
     posX = x;
     posY = y;
     std::string path = getPieceTexturePath();
@@ -17,7 +17,7 @@ Piece::Piece(ColorType colorType, PieceType pieceType, Board& parentBoard, int x
 }
 
 Piece::Piece(const Piece& other)
-        : color(other.color), piece(other.piece), parentBoard(other.parentBoard), renderer(other.renderer),
+        : color(other.color), piece(other.piece), parentBoard(other.parentBoard), m_Renderer(other.m_Renderer),
           posX(other.posX), posY(other.posY), hasMoved(other.hasMoved) {
     initializeTexture(getPieceTexturePath());
 }
@@ -57,7 +57,7 @@ void Piece::initializeTexture(const std::string &path) {
         printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError());
         return;
     }
-    texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
+    texture = SDL_CreateTextureFromSurface(m_Renderer, loadedSurface);
     if (texture == nullptr) {
         std::cerr << "Failed to load texture: " << path << std::endl;
         std::cerr << "SDL Error: " << SDL_GetError() << std::endl;
@@ -119,7 +119,7 @@ void Piece::setHasDoubleMoved(int oldX, int oldY, int newX, int newY) {
 }
 
 std::vector<std::pair<int, int>> Piece::calculatePossibleMoves(Board& board ,bool isRealMove) {
-    if(color != Game::playerToMove && isRealMove){
+    if(color != Game::getPlayerToMove() && isRealMove){
         //return {};
     }
     switch (piece){

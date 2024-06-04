@@ -37,7 +37,7 @@ public:
 private:
     void initializeTexture(const std::string &path);
     SDL_Texture *texture{};
-    SDL_Renderer* renderer;
+    SDL_Renderer* m_Renderer;
     Board& parentBoard;
 
 

@@ -14,15 +14,10 @@ add_executable(${PROJECT_NAME} src/main.cpp
         include/Board.hpp
         src/game/Game.cpp
         include/Game.hpp
-        src/game/Menu.cpp
-        include/Menu.hpp
         src/game/enums/GameState.hpp
-        src/utils/VisualHelper.cpp
-        include/VisualHelper.hpp
         include/SDL_Helper.hpp
         include/MoveHelper.hpp
         src/utils/MoveHelper.cpp
-        include/BoardManager.hpp
         src/utils/BoardManager.cpp
         include/RendererManager.hpp
         src/game/Move.cpp

@@ -5,8 +5,7 @@
 #pragma once
 #include <utility>
 
-class Move {
-public:
+struct Move {
     std::pair<int,int> from;
     std::pair<int,int> to;
 
