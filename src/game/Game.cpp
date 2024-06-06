@@ -10,11 +10,12 @@ Game::Game(): m_clickedPiece(nullptr)
     initializeRenderer();
     m_Board = new Board(m_Renderer);
     runGame();
+    setPlayerToMove(ColorType::WHITE);
+    setPlayerColor(ColorType::WHITE);
 }
 
 ColorType Game::m_PlayerToMove = ColorType::WHITE;
 ColorType Game::m_PlayerColor = ColorType::WHITE;
-
 void Game::initializeWindow()
 {
     SDL_Init(SDL_INIT_VIDEO);
@@ -112,7 +113,7 @@ void Game::handleEvent(SDL_Event& e, bool& running)
                     m_clickedPiece = m_Board->getPieceAt(x / 80, y / 80);
                     if (m_clickedPiece != nullptr)
                     {
-                        m_PossibleMoves = m_clickedPiece->calculatePossibleMoves(*m_Board);
+                        m_PossibleMoves = m_clickedPiece->calculatePossibleMoves(*m_Board, true, true);
                         if(!m_PossibleMoves.empty())
                         {
                             m_IsMoveInitialized = true;
@@ -125,7 +126,7 @@ void Game::handleEvent(SDL_Event& e, bool& running)
                 m_clickedPiece = m_Board->getPieceAt(x / 80, y / 80);
                 if (m_clickedPiece != nullptr)
                 {
-                    m_PossibleMoves = m_clickedPiece->calculatePossibleMoves(*m_Board);
+                    m_PossibleMoves = m_clickedPiece->calculatePossibleMoves(*m_Board, true, true);
                     if(!m_PossibleMoves.empty())
                     {
                         m_IsMoveInitialized = true;

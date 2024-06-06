@@ -119,13 +119,15 @@ bool Board::movePiece(int oldX, int oldY, int newX, int newY, bool isReal)
         return false;
     }
 
+
     std::vector<std::pair<int, int>> possibleMoves = piece->calculatePossibleMoves(*this);
     if (std::find(possibleMoves.begin(), possibleMoves.end(), std::make_pair(newX, newY)) != possibleMoves.end())
     {
         m_TempPieces.push({std::move(m_PieceBoard[newY][newX]), piece->hasMoved});
+        // Check if the move is a castling move
         if (piece->getPiece() == PieceType::KING && abs(newX - oldX) == 2)
         {
-            int rookX = (newX > oldX) ? 7 : 0;
+            int rookX = (newX > oldX) ? 7 : 0; // The rook is on the right for king-side castling and on the left for queen-side castling
             Piece* rook = getPieceAt(rookX, oldY);
             int step = (newX > oldX) ? 1 : -1;
             // Move the rook
@@ -136,6 +138,7 @@ bool Board::movePiece(int oldX, int oldY, int newX, int newY, bool isReal)
             rook->hasMoved = true;
         }
 
+        // Move the piece
         m_PieceBoard[newY][newX] = std::move(m_PieceBoard[oldY][oldX]);
         updatePieceLocation(oldX, oldY, newX, newY);
         piece->setPosX(newX);
@@ -145,6 +148,7 @@ bool Board::movePiece(int oldX, int oldY, int newX, int newY, bool isReal)
 
         if (piece->getPiece() == PieceType::PAWN && ((piece->getColor() == ColorType::WHITE && newY == 0) || (piece->getColor() == ColorType::BLACK && newY == 7)))
         {
+            // Replace the pawn with a new queen. You can modify this to allow the player to choose which piece to promote to.
             m_PieceBoard[newY][newX] = std::make_unique<Piece>(piece->getColor(), PieceType::QUEEN, *this, newX, newY);
         }
 
@@ -252,11 +256,11 @@ void Board::display()
 
             if ((x + y) % 2 == 0)
             {
-                SDL_SetRenderDrawColor(m_Renderer, 200, 200, 200, 255);
+                SDL_SetRenderDrawColor(m_Renderer, 240, 217, 181, 255); // White
             }
             else
             {
-                SDL_SetRenderDrawColor(m_Renderer, 87, 87, 87, 255);
+                SDL_SetRenderDrawColor(m_Renderer, 181, 136, 99, 255); // Black
             }
             SDL_RenderFillRect(m_Renderer, &rect);
             if (m_PieceBoard[y][x] != nullptr)
@@ -269,7 +273,7 @@ void Board::display()
 
 void Board::displayPossibleMoves(const std::vector<std::pair<int, int>>& possibleMoves)
 {
-    SDL_SetRenderDrawColor(m_Renderer, 128, 128, 128, 255);
+    SDL_SetRenderDrawColor(m_Renderer, 128, 128, 128, 255); // Gray
     for (const auto& move : possibleMoves)
     {
         int x = move.first * TILE_SIZE + TILE_SIZE / 2;
@@ -309,7 +313,7 @@ bool Board::isKingInCheckmate(ColorType kingColor, Board& board_)
 {
     if (!isKingInCheck(kingColor, board_))
     {
-        return false; // The king is not in check
+        return false;
     }
 
     for (int y = 0; y < 8; ++y)

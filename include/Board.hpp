@@ -21,12 +21,15 @@ public:
     Piece* getPieceAt(int x, int y);
     void revertMove(int oldX, int oldY, int newX, int newY);
     void displayPossibleMoves(const std::vector<std::pair<int, int>>& possibleMoves);
+
     void updatePieceLocation(int oldX, int oldY, int newX, int newY);
     bool movePiece(int oldX, int oldY, int newX, int newY, bool isReal = false);
     bool tempMovePiece(int oldX, int oldY, int newX, int newY);
+
     bool isMoveSafe(int oldX, int oldY, int newX, int newY, ColorType kingColor, bool isReal);
     bool isKingInCheck(ColorType kingColor, Board& board);
     bool isKingInCheckmate(ColorType kingColor, Board& board);
+
     int getScore();
 
 private:
