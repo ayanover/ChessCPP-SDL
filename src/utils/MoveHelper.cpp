@@ -2,7 +2,6 @@
 // Created by rexiv on 23.05.2024.
 //
 #include "../../include/MoveHelper.hpp"
-#include "../../include/Game.hpp"
 
 
 std::vector<std::pair<int, int>> calculatePawnMoves(const Piece& piece, Board& board, bool isRealMove) {

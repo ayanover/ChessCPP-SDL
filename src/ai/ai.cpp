@@ -20,7 +20,6 @@ std::vector<Move> generateMoves(Board& board, ColorType colorType) {
     return moves;
 }
 
-// Alpha-beta pruning minimax function with move ordering
 int minimax(Board& board, int depth, bool isMaximizingPlayer, int alpha, int beta) {
     if (depth == 0) {
         int score = board.getScore();
@@ -43,7 +42,7 @@ int minimax(Board& board, int depth, bool isMaximizingPlayer, int alpha, int bet
             maxEval = std::max(maxEval, eval);
             alpha = std::max(alpha, eval);
             if (beta <= alpha) {
-                break; // Beta cutoff
+                break;
             }
         }
         return maxEval;
@@ -56,7 +55,7 @@ int minimax(Board& board, int depth, bool isMaximizingPlayer, int alpha, int bet
             minEval = std::min(minEval, eval);
             beta = std::min(beta, eval);
             if (beta <= alpha) {
-                break; // Alpha cutoff
+                break;
             }
         }
         return minEval;
@@ -65,7 +64,7 @@ int minimax(Board& board, int depth, bool isMaximizingPlayer, int alpha, int bet
 
 Move findBestMove(Board& board, int depth) {
     int bestValue = INT_MAX;
-    Move bestMove(std::pair<int, int>(-1, -1),std::pair<int, int>(-1, -1)); // Initialize with an invalid move
+    Move bestMove(std::pair<int, int>(-1, -1),std::pair<int, int>(-1, -1));
     std::vector<Move> moves = generateMoves(board, ColorType::BLACK);
 
     for (const auto& move : moves) {

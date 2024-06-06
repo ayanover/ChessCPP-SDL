@@ -4,18 +4,17 @@
 #include "../../include/ai/ai.h"
 #include "../../include/RendererManager.hpp"
 
-Game::Game():clickedPiece(nullptr)
+Game::Game(): m_clickedPiece(nullptr)
 {
     initializeWindow();
     initializeRenderer();
     m_Board = new Board(m_Renderer);
     runGame();
-    setPlayerToMove(ColorType::WHITE);
-    setPlayerColor(ColorType::WHITE);
 }
 
 ColorType Game::m_PlayerToMove = ColorType::WHITE;
 ColorType Game::m_PlayerColor = ColorType::WHITE;
+
 void Game::initializeWindow()
 {
     SDL_Init(SDL_INIT_VIDEO);
@@ -88,12 +87,12 @@ void Game::handleEvent(SDL_Event& e, bool& running)
             SDL_GetMouseState(&x, &y);
             if(m_IsMoveInitialized)
             {
-                if(clickedPiece->getPosX() == x / 80 && clickedPiece->getPosY()==y/80)
+                if(m_clickedPiece->getPosX() == x / 80 && m_clickedPiece->getPosY() == y / 80)
                 {
                     m_IsMoveInitialized = false;
                     m_PossibleMoves.clear();
                 }
-                else if(m_Board->movePiece(clickedPiece->getPosX(), clickedPiece->getPosY(), x / 80, y / 80, true))
+                else if(m_Board->movePiece(m_clickedPiece->getPosX(), m_clickedPiece->getPosY(), x / 80, y / 80, true))
                 {
                     m_IsMoveInitialized = false;
                     m_PossibleMoves.clear();
@@ -110,10 +109,10 @@ void Game::handleEvent(SDL_Event& e, bool& running)
                 {
                     m_IsMoveInitialized = false;
                     m_PossibleMoves.clear();
-                    clickedPiece = m_Board->getPieceAt(x / 80, y / 80);
-                    if (clickedPiece != nullptr)
+                    m_clickedPiece = m_Board->getPieceAt(x / 80, y / 80);
+                    if (m_clickedPiece != nullptr)
                     {
-                        m_PossibleMoves = clickedPiece->calculatePossibleMoves(*m_Board);
+                        m_PossibleMoves = m_clickedPiece->calculatePossibleMoves(*m_Board);
                         if(!m_PossibleMoves.empty())
                         {
                             m_IsMoveInitialized = true;
@@ -123,10 +122,10 @@ void Game::handleEvent(SDL_Event& e, bool& running)
             }
             else
             {
-                clickedPiece = m_Board->getPieceAt(x / 80, y / 80);
-                if (clickedPiece != nullptr)
+                m_clickedPiece = m_Board->getPieceAt(x / 80, y / 80);
+                if (m_clickedPiece != nullptr)
                 {
-                    m_PossibleMoves = clickedPiece->calculatePossibleMoves(*m_Board);
+                    m_PossibleMoves = m_clickedPiece->calculatePossibleMoves(*m_Board);
                     if(!m_PossibleMoves.empty())
                     {
                         m_IsMoveInitialized = true;

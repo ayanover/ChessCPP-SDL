@@ -10,7 +10,6 @@ public:
 public:
     static void setPlayerColor(ColorType playerColor) {m_PlayerColor = playerColor;}
     static ColorType getPlayerColor() {return  m_PlayerColor;}
-
     static void setPlayerToMove(ColorType playerToMove) {m_PlayerToMove = playerToMove;}
     static ColorType getPlayerToMove() {return m_PlayerToMove;}
 
@@ -30,7 +29,7 @@ private:
     static ColorType m_PlayerColor;
     static ColorType m_PlayerToMove;
     bool m_IsMoveInitialized = false;
-    Piece *clickedPiece;
+    Piece *m_clickedPiece;
     std::vector<std::pair<int, int>> m_PossibleMoves;
 };
 
