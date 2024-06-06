@@ -113,7 +113,7 @@ void Game::handleEvent(SDL_Event& e, bool& running)
                     clickedPiece = m_Board->getPieceAt(x / 80, y / 80);
                     if (clickedPiece != nullptr)
                     {
-                        m_PossibleMoves = clickedPiece->calculatePossibleMoves(*m_Board);
+                        m_PossibleMoves = clickedPiece->calculatePossibleMoves(*m_Board, true, true);
                         if(!m_PossibleMoves.empty())
                         {
                             m_IsMoveInitialized = true;
@@ -126,7 +126,7 @@ void Game::handleEvent(SDL_Event& e, bool& running)
                 clickedPiece = m_Board->getPieceAt(x / 80, y / 80);
                 if (clickedPiece != nullptr)
                 {
-                    m_PossibleMoves = clickedPiece->calculatePossibleMoves(*m_Board);
+                    m_PossibleMoves = clickedPiece->calculatePossibleMoves(*m_Board, true, true);
                     if(!m_PossibleMoves.empty())
                     {
                         m_IsMoveInitialized = true;

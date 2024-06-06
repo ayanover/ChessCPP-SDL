@@ -20,7 +20,6 @@ std::vector<Move> generateMoves(Board& board, ColorType colorType) {
     return moves;
 }
 
-// Alpha-beta pruning minimax function with move ordering
 int minimax(Board& board, int depth, bool isMaximizingPlayer, int alpha, int beta) {
     if (depth == 0) {
         int score = board.getScore();

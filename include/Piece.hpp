@@ -32,7 +32,7 @@ public:
     void setHasDoubleMoved(int oldX, int oldY, int newX, int newY);
 
     void display(SDL_Renderer* renderer, int x, int y);
-    std::vector<std::pair<int, int>> calculatePossibleMoves(Board& board, bool isRealMove = true);
+    std::vector<std::pair<int, int>> calculatePossibleMoves(Board& board, bool isRealMove = true, bool isPlayerMove = false);
 
 private:
     void initializeTexture(const std::string &path);

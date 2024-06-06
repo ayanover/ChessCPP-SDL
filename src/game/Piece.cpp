@@ -118,9 +118,9 @@ void Piece::setHasDoubleMoved(int oldX, int oldY, int newX, int newY) {
     }
 }
 
-std::vector<std::pair<int, int>> Piece::calculatePossibleMoves(Board& board ,bool isRealMove) {
-    if(color != Game::getPlayerToMove() && isRealMove){
-        //return {};
+std::vector<std::pair<int, int>> Piece::calculatePossibleMoves(Board& board ,bool isRealMove, bool isPlayerMove) {
+    if(color != Game::getPlayerToMove() && isPlayerMove){
+        return {};
     }
     switch (piece){
         case PieceType::PAWN:

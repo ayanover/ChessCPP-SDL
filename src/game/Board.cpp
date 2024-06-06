@@ -256,11 +256,11 @@ void Board::display()
 
             if ((x + y) % 2 == 0)
             {
-                SDL_SetRenderDrawColor(m_Renderer, 200, 200, 200, 255); // White
+                SDL_SetRenderDrawColor(m_Renderer, 240, 217, 181, 255); // White
             }
             else
             {
-                SDL_SetRenderDrawColor(m_Renderer, 87, 87, 87, 255); // Black
+                SDL_SetRenderDrawColor(m_Renderer, 181, 136, 99, 255); // Black
             }
             SDL_RenderFillRect(m_Renderer, &rect);
             if (m_PieceBoard[y][x] != nullptr)
@@ -313,7 +313,7 @@ bool Board::isKingInCheckmate(ColorType kingColor, Board& board_)
 {
     if (!isKingInCheck(kingColor, board_))
     {
-        return false; // The king is not in check
+        return false;
     }
 
     for (int y = 0; y < 8; ++y)
