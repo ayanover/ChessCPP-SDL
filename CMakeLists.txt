@@ -7,8 +7,6 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/ai/ai.cpp
         include/ai/ai.h
         include/Piece.hpp
-        include/pieces/Pawn.hpp
-        include/pieces/Rook.hpp
         src/game/Piece.cpp
         src/game/Board.cpp
         include/Board.hpp
@@ -22,12 +20,16 @@ add_executable(${PROJECT_NAME} src/main.cpp
         include/RendererManager.hpp
         src/game/Move.cpp
         include/Move.hpp
+        src/game/Menu.cpp
+        include/Menu.hpp
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 set(SDL2_PATH "SDL2/x86_64-w64-mingw32")
 set(SDL2_TTF_PATH "SDL2/x86_64-w64-mingw32")
 set(SDL2_IMAGE_PATH "SDL2/x86_64-w64-mingw32")
+set(SDL2_INCLUDE_DIR "SDL2/x86_64-w64-mingw32/include/SDL2")
+set(SDL2_TTF_INCLUDE_DIR "SDL2/x86_64-w64-mingw32/include/SDL2")
 
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})

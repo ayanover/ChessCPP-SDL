@@ -240,7 +240,22 @@ void Board::revertMove(int oldX, int oldY, int newX, int newY)
     m_TempPieces.pop();
 }
 
+void Board::displayPieces(){
+    SDL_Rect rect;
+    rect.w = TILE_SIZE;
+    rect.h = TILE_SIZE;
 
+    for (int y = 0; y < 8; ++y) {
+        for (int x = 0; x < 8; ++x) {
+            rect.x = x * TILE_SIZE;
+            rect.y = y * TILE_SIZE;
+            if (m_PieceBoard[y][x] != nullptr)
+            {
+                m_PieceBoard[y][x]->display(m_Renderer, rect.x, rect.y);
+            }
+        }
+    }
+}
 void Board::display()
 {
     SDL_Rect rect;
@@ -263,10 +278,6 @@ void Board::display()
                 SDL_SetRenderDrawColor(m_Renderer, 181, 136, 99, 255); // Black
             }
             SDL_RenderFillRect(m_Renderer, &rect);
-            if (m_PieceBoard[y][x] != nullptr)
-            {
-                m_PieceBoard[y][x]->display(m_Renderer, rect.x, rect.y);
-            }
         }
     }
 }
@@ -362,37 +373,113 @@ std::pair<int, int> Board::getKingPosition(ColorType kingColor, Board& board_)
 int Board::getScore() {
     int score = 0;
     const int pieceValues[6] = {10, 30, 30, 50, 90, 1000}; // Pawn, Knight, Bishop, Rook, Queen, King
+
+    // Piece-square tables
+    const float pawnTable[8][8] = {
+            { 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 1, 1, 2, 3, 3, 2, 1, 1 },
+            { 1, 1, 2, 3, 3, 2, 1, 1 },
+            { 0, 0, 0, 6, 6, 0, 0, 0 },
+            { 0, 0, 0, 6, 6, 0, 0, 0 },
+            { 1, 1, 1, 3, 3, 1, 1, 1 },
+            { 1, 1, 2, 3, 3, 2, 1, 1 },
+            { 0, 0, 0, 0, 0, 0, 0, 0 }
+    };
+
+    const float knightTable[8][8] = {
+            {-5, 0, -3, -3, -3, -3, 0, -5},
+            {-4, -2,  0,  0,  0,  0, -2, -4},
+            {-3,  0,  1,  1,  1,  1,  0, -3},
+            {-3,  0,  1,  2,  2,  1,  0, -3},
+            {-3,  0,  1,  2,  2,  1,  0, -3},
+            {-3,  0,  1,  1,  1,  1,  0, -3},
+            {-4, -2,  0,  0,  0,  0, -2, -4},
+            {-5, -4, -3, -3, -3, -3, -4, -5}
+    };
+
+    const float bishopTable[8][8] = {
+            {-2, -1, -1, -1, -1, -1, -1, -2},
+            {-1,  0,  0,  0,  0,  0,  0, -1},
+            {-1,  0,  1,  1,  1,  1,  0, -1},
+            {-1,  0,  1,  1,  1,  1,  0, -1},
+            {-1,  0,  1,  1,  1,  1,  0, -1},
+            {-1,  0,  1,  1,  1,  1,  0, -1},
+            {-1,  0,  0,  0,  0,  0,  0, -1},
+            {-2, -1, -1, -1, -1, -1, -1, -2}
+    };
+
+    const float rookTable[8][8] = {
+            { 0,  0,  0,  0,  0,  0,  0,  0},
+            { 1,  2,  2,  2,  2,  2,  2,  1},
+            {-1,  0,  0,  0,  0,  0,  0, -1},
+            {-1,  0,  0,  0,  0,  0,  0, -1},
+            {-1,  0,  0,  0,  0,  0,  0, -1},
+            {-1,  0,  0,  0,  0,  0,  0, -1},
+            {-1,  0,  0,  0,  0,  0,  0, -1},
+            { 0,  0,  0,  1,  1,  0,  0,  0}
+    };
+
+    const float queenTable[8][8] = {
+            {-2, -1, -1, -0.5, -0.5, -1, -1, -2},
+            {-1,  0,  0,  0,  0,  0,  0, -1},
+            {-1,  0,  0.5,  0.5,  0.5,  0.5,  0, -1},
+            {-0.5,  0,  0.5,  0.5,  0.5,  0.5,  0, -0.5},
+            { 0,  0,  0.5,  0.5,  0.5,  0.5,  0, -0.5},
+            {-1,  0.5,  0.5,  0.5,  0.5,  0.5,  0, -1},
+            {-1,  0,  0.5,  0,  0,  0,  0, -1},
+            {-2, -1, -1, -0.5, -0.5, -1, -1, -2}
+    };
+
+    const float kingTable[8][8] = {
+            {2,  3,  1,  0,  0,  1,  3,  2},
+            {2,  2,  0,  0,  0,  0,  2,  2},
+            {-3, -4, -4, -5, -5, -4, -4, -3},
+            {-3, -4, -4, -5, -5, -4, -4, -3},
+            {-2, -3, -3, -4, -4, -3, -3, -2},
+            {-1, -2, -2, -2, -2, -2, -2, -1},
+            { 2,  2,  0,  0,  0,  0,  2,  2},
+            { 2,  3,  1,  0,  0,  1,  3,  2}
+    };
+
     for (int y = 0; y < 8; ++y) {
         for (int x = 0; x < 8; ++x) {
             Piece* piece = getPieceAt(x, y);
-            if(piece != nullptr){
+            if (piece != nullptr) {
                 int pieceValue = 0;
+                float positionalValue = 0;
                 switch (piece->getPiece()) {
                     case PieceType::PAWN:
                         pieceValue = pieceValues[0];
+                        positionalValue = pawnTable[y][x];
                         break;
                     case PieceType::KNIGHT:
                         pieceValue = pieceValues[1];
+                        positionalValue = knightTable[y][x];
                         break;
                     case PieceType::BISHOP:
                         pieceValue = pieceValues[2];
+                        positionalValue = bishopTable[y][x];
                         break;
                     case PieceType::ROOK:
                         pieceValue = pieceValues[3];
+                        positionalValue = rookTable[y][x];
                         break;
                     case PieceType::QUEEN:
                         pieceValue = pieceValues[4];
+                        positionalValue = queenTable[y][x];
                         break;
                     case PieceType::KING:
                         pieceValue = pieceValues[5];
+                        positionalValue = kingTable[y][x];
                         break;
                     default:
                         break;
                 }
+                float pieceScore = pieceValue + positionalValue;
                 if (piece->getColor() == ColorType::BLACK) {
-                    score -= pieceValue;
+                    score -= pieceScore;
                 } else {
-                    score += pieceValue;
+                    score += pieceScore;
                 }
             }
         }

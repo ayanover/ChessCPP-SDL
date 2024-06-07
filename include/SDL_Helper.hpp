@@ -5,43 +5,42 @@
 #ifndef CHESS_SDL_HELPER_HPP
 #define CHESS_SDL_HELPER_HPP
 
+#include <valarray>
 #include "SDL.h"
+#include "SDL_ttf.h"
+
+void renderText(const char* text, int x, int y, SDL_Color color, SDL_Renderer* renderer, TTF_Font* font) {
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, text, color);
+    SDL_Texture* mTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    int mWidth = textSurface->w;
+    int mHeight = textSurface->h;
+    SDL_FreeSurface(textSurface);
+
+    SDL_Rect renderQuad = {x, y, mWidth, mHeight};
+    SDL_RenderCopy(renderer, mTexture, NULL, &renderQuad);
+    SDL_DestroyTexture(mTexture);
+}
 
 void SDL_RenderDrawCircle(SDL_Renderer* renderer, int32_t centreX, int32_t centreY, int32_t radius)
 {
-    const int32_t diameter = (radius * 2);
-
-    int32_t x = (radius - 1);
-    int32_t y = 0;
-    int32_t tx = 1;
-    int32_t ty = 1;
-    int32_t error = (tx - diameter);
-
-    while (x >= y)
+    auto plot = [&](int32_t x, int32_t y, Uint8 alpha)
     {
-        //  Each of the following renders an octant of the circle
-        SDL_RenderDrawPoint(renderer, centreX + x, centreY - y);
-        SDL_RenderDrawPoint(renderer, centreX + x, centreY + y);
-        SDL_RenderDrawPoint(renderer, centreX - x, centreY - y);
-        SDL_RenderDrawPoint(renderer, centreX - x, centreY + y);
-        SDL_RenderDrawPoint(renderer, centreX + y, centreY - x);
-        SDL_RenderDrawPoint(renderer, centreX + y, centreY + x);
-        SDL_RenderDrawPoint(renderer, centreX - y, centreY - x);
-        SDL_RenderDrawPoint(renderer, centreX - y, centreY + x);
+        SDL_SetRenderDrawColor(renderer, 150, 150, 150, alpha); // Assuming white color for the circle
+        SDL_RenderDrawPoint(renderer, x, y);
+    };
 
-        if (error <= 0)
+    for (int32_t y = -radius; y <= radius; y++)
+    {
+        for (int32_t x = -radius; x <= radius; x++)
         {
-            ++y;
-            error += ty;
-            ty += 2;
-        }
-
-        if (error > 0)
-        {
-            --x;
-            tx += 2;
-            error += (tx - diameter);
+            float distance = std::sqrt(static_cast<float>(x * x + y * y));
+            if (distance <= radius)
+            {
+                Uint8 alpha = static_cast<Uint8>(255 * (1.0f - (distance - std::floor(distance))));
+                plot(centreX + x, centreY + y, alpha);
+            }
         }
     }
 }
+
 #endif //CHESS_SDL_HELPER_HPP

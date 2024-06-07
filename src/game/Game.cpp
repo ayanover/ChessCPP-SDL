@@ -3,13 +3,15 @@
 #include "../../include/Game.hpp"
 #include "../../include/ai/ai.h"
 #include "../../include/RendererManager.hpp"
+#include "../../include/Menu.hpp"
 
 Game::Game(): m_clickedPiece(nullptr)
 {
     initializeWindow();
     initializeRenderer();
     m_Board = new Board(m_Renderer);
-    runGame();
+    Menu menu(m_Renderer, *this);
+    menu.display();
     setPlayerToMove(ColorType::WHITE);
     setPlayerColor(ColorType::WHITE);
 }
@@ -23,10 +25,9 @@ void Game::initializeWindow()
                           SDL_WINDOWPOS_UNDEFINED,
                           SDL_WINDOWPOS_UNDEFINED,
                           SCREEN_WIDTH, SCREEN_HEIGHT,
-                          SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+                          SDL_WINDOW_SHOWN);
 
 
-    // Set Icon for the app
     SDL_Surface* icon = IMG_Load("../assets/Pieces/white-king.png");
     if (icon == nullptr)
     {
@@ -46,6 +47,7 @@ void Game::initializeRenderer()
     RendererManager::getInstance().setRenderer(m_Renderer);
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 }
+
 
 void Game::runGame()
 {
@@ -71,6 +73,7 @@ void Game::gameLoop()
 
         m_Board->display();
         m_Board->displayPossibleMoves(m_PossibleMoves);
+        m_Board->displayPieces();
 
         SDL_RenderPresent(m_Renderer);
     }

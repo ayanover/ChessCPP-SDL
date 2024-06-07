@@ -17,6 +17,7 @@ public:
 
     void initialize();
     void display();
+    void displayPieces();
     SDL_Renderer* getRenderer();
     Piece* getPieceAt(int x, int y);
     void revertMove(int oldX, int oldY, int newX, int newY);
