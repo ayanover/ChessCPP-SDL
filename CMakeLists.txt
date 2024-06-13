@@ -3,7 +3,17 @@ project(Chess)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(${PROJECT_NAME} src/main.cpp
+# Define build types
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: Debug Release" FORCE)
+endif()
+
+# Compiler flags for release build
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -s")
+
+add_executable(${PROJECT_NAME}
+        src/main.cpp
         src/ai/ai.cpp
         include/ai/ai.h
         include/Piece.hpp
@@ -35,7 +45,6 @@ find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 
-
 find_package(SDL2_ttf REQUIRED)
 if(SDL2_TTF_FOUND)
     include_directories(${SDL2_TTF_INCLUDE_DIR})
@@ -51,6 +60,3 @@ if(SDL2_IMAGE_FOUND)
 else()
     message(FATAL_ERROR "SDL2_image not found")
 endif()
-
-
-

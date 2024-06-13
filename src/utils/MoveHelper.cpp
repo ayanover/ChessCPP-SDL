@@ -54,11 +54,11 @@ std::vector<std::pair<int, int>> calculatePawnMoves(const Piece& piece, Board& b
         }
     }
 
-    // TODO: Add logic to handle en passant.
-    if (y == (piece.getColor() == ColorType::WHITE ? 3 : 4)) { // The pawn is on its fifth rank
+    // En passant - currently not working
+    if (y == (piece.getColor() == ColorType::WHITE ? 3 : 4)) {
         std::vector<int> adjacentFiles = {x - 1, x + 1};
         for (int adjFile : adjacentFiles) {
-            if (adjFile >= 0 && adjFile < 8) { // The file is on the m_Board
+            if (adjFile >= 0 && adjFile < 8) {
                 Piece* adjPiece = board.getPieceAt(adjFile, y);
                 if (adjPiece != nullptr && adjPiece->getColor() != piece.getColor() && adjPiece->getPiece() == PieceType::PAWN && adjPiece->hasDoubleMoved == true) {
                     if (isRealMove) {

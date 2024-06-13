@@ -25,7 +25,7 @@ private:
     SDL_Rect m_QuitButton;
 
     SDL_Texture* initializeTexture(const std::string &path);
-    void renderText(const char* text, int x, int y, SDL_Color color);
+    void renderText(const char* text, int x, int y, SDL_Color color, short width = 0, short height = 0);
 };
 
 #endif

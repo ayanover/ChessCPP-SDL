@@ -374,7 +374,6 @@ int Board::getScore() {
     int score = 0;
     const int pieceValues[6] = {10, 30, 30, 50, 90, 1000}; // Pawn, Knight, Bishop, Rook, Queen, King
 
-    // Piece-square tables
     const float pawnTable[8][8] = {
             { 0, 0, 0, 0, 0, 0, 0, 0 },
             { 1, 1, 2, 3, 3, 2, 1, 1 },
