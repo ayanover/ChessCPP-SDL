@@ -124,13 +124,11 @@ bool Board::movePiece(int oldX, int oldY, int newX, int newY, bool isReal)
     if (std::find(possibleMoves.begin(), possibleMoves.end(), std::make_pair(newX, newY)) != possibleMoves.end())
     {
         m_TempPieces.push({std::move(m_PieceBoard[newY][newX]), piece->hasMoved});
-        // Check if the move is a castling move
         if (piece->getPiece() == PieceType::KING && abs(newX - oldX) == 2)
         {
-            int rookX = (newX > oldX) ? 7 : 0; // The rook is on the right for king-side castling and on the left for queen-side castling
+            int rookX = (newX > oldX) ? 7 : 0; 
             Piece* rook = getPieceAt(rookX, oldY);
             int step = (newX > oldX) ? 1 : -1;
-            // Move the rook
             m_PieceBoard[oldY][newX - step] = std::move(m_PieceBoard[oldY][rookX]);
             updatePieceLocation(oldX, oldY, newX, newY);
             rook->setPosX(newX - step);
@@ -138,7 +136,6 @@ bool Board::movePiece(int oldX, int oldY, int newX, int newY, bool isReal)
             rook->hasMoved = true;
         }
 
-        // Move the piece
         m_PieceBoard[newY][newX] = std::move(m_PieceBoard[oldY][oldX]);
         updatePieceLocation(oldX, oldY, newX, newY);
         piece->setPosX(newX);
@@ -148,7 +145,6 @@ bool Board::movePiece(int oldX, int oldY, int newX, int newY, bool isReal)
 
         if (piece->getPiece() == PieceType::PAWN && ((piece->getColor() == ColorType::WHITE && newY == 0) || (piece->getColor() == ColorType::BLACK && newY == 7)))
         {
-            // Replace the pawn with a new queen. You can modify this to allow the player to choose which piece to promote to.
             m_PieceBoard[newY][newX] = std::make_unique<Piece>(piece->getColor(), PieceType::QUEEN, *this, newX, newY);
         }
 
