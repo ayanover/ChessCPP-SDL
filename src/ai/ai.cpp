@@ -1,5 +1,6 @@
 #include <utility>
 #include <algorithm>
+#include <climits>
 #include "../../include/ai/ai.h"
 #include "../../include/Game.hpp"
 
