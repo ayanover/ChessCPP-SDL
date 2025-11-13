@@ -18,8 +18,9 @@ public:
     void initialize();
     void display();
     void displayPieces();
-    SDL_Renderer* getRenderer();
+    SDL_Renderer* getRenderer() const;
     Piece* getPieceAt(int x, int y);
+    const Piece* getPieceAt(int x, int y) const;
     void revertMove(int oldX, int oldY, int newX, int newY);
     void displayPossibleMoves(const std::vector<std::pair<int, int>>& possibleMoves);
 

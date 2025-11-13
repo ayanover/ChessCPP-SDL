@@ -6,13 +6,17 @@
 
 std::vector<Move> generateMoves(Board& board, ColorType colorType) {
     std::vector<Move> moves;
+    moves.reserve(40); // Average number of legal moves in chess
+
     for (int y = 0; y < 8; ++y) {
         for (int x = 0; x < 8; ++x) {
             Piece* piece = board.getPieceAt(x, y);
             if (piece != nullptr && piece->getColor() == colorType) {
-                for (const auto &move: piece->calculatePossibleMoves(board)) {
+                const std::vector<std::pair<int, int>>& possibleMoves = piece->calculatePossibleMoves(board);
+                for (const auto &move : possibleMoves) {
+                    // Bounds check (should already be valid from calculatePossibleMoves)
                     if (move.first >= 0 && move.first < 8 && move.second >= 0 && move.second < 8) {
-                        moves.emplace_back(std::pair<int, int>(x, y), std::pair<int, int>(move.first, move.second));
+                        moves.emplace_back(std::make_pair(x, y), move);
                     }
                 }
             }
@@ -23,15 +27,14 @@ std::vector<Move> generateMoves(Board& board, ColorType colorType) {
 
 int minimax(Board& board, int depth, bool isMaximizingPlayer, int alpha, int beta) {
     if (depth == 0) {
-        int score = board.getScore();
-        return score;
+        return board.getScore();
     }
 
-    std::vector<Move> moves = generateMoves(board, isMaximizingPlayer ? ColorType::WHITE : ColorType::BLACK);
+    const ColorType currentColor = isMaximizingPlayer ? ColorType::WHITE : ColorType::BLACK;
+    std::vector<Move> moves = generateMoves(board, currentColor);
 
     if (moves.empty()) {
-        int score = board.getScore();
-        return score;
+        return board.getScore();
     }
 
     if (isMaximizingPlayer) {
@@ -40,10 +43,15 @@ int minimax(Board& board, int depth, bool isMaximizingPlayer, int alpha, int bet
             board.tempMovePiece(move.from.first, move.from.second, move.to.first, move.to.second);
             int eval = minimax(board, depth - 1, false, alpha, beta);
             board.revertMove(move.from.first, move.from.second, move.to.first, move.to.second);
-            maxEval = std::max(maxEval, eval);
-            alpha = std::max(alpha, eval);
+
+            if (eval > maxEval) {
+                maxEval = eval;
+            }
+            if (eval > alpha) {
+                alpha = eval;
+            }
             if (beta <= alpha) {
-                break;
+                break; // Beta cutoff
             }
         }
         return maxEval;
@@ -53,10 +61,15 @@ int minimax(Board& board, int depth, bool isMaximizingPlayer, int alpha, int bet
             board.tempMovePiece(move.from.first, move.from.second, move.to.first, move.to.second);
             int eval = minimax(board, depth - 1, true, alpha, beta);
             board.revertMove(move.from.first, move.from.second, move.to.first, move.to.second);
-            minEval = std::min(minEval, eval);
-            beta = std::min(beta, eval);
+
+            if (eval < minEval) {
+                minEval = eval;
+            }
+            if (eval < beta) {
+                beta = eval;
+            }
             if (beta <= alpha) {
-                break;
+                break; // Alpha cutoff
             }
         }
         return minEval;
@@ -65,17 +78,21 @@ int minimax(Board& board, int depth, bool isMaximizingPlayer, int alpha, int bet
 
 Move findBestMove(Board& board, int depth) {
     int bestValue = INT_MAX;
-    Move bestMove(std::pair<int, int>(-1, -1),std::pair<int, int>(-1, -1));
+    Move bestMove; // Use default constructor
     std::vector<Move> moves = generateMoves(board, ColorType::BLACK);
+
+    int alpha = INT_MIN;
+    int beta = INT_MAX;
 
     for (const auto& move : moves) {
         board.tempMovePiece(move.from.first, move.from.second, move.to.first, move.to.second);
-        int boardValue = minimax(board, depth, true, INT_MIN, INT_MAX);
+        int boardValue = minimax(board, depth, true, alpha, beta);
         board.revertMove(move.from.first, move.from.second, move.to.first, move.to.second);
 
         if (boardValue < bestValue) {
             bestValue = boardValue;
             bestMove = move;
+            beta = boardValue; // Update beta for better pruning
         }
     }
     return bestMove;

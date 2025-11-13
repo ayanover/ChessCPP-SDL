@@ -91,14 +91,25 @@ void Board::initialize()
 
 Piece* Board::getPieceAt(int x, int y)
 {
-    if (x < 0 || x >= 8 || y < 0 || y >= 8)
+    // Inline bounds check for better performance
+    if (static_cast<unsigned>(x) >= 8 || static_cast<unsigned>(y) >= 8)
     {
         return nullptr;
     }
     return m_PieceBoard[y][x].get();
 }
 
-SDL_Renderer* Board::getRenderer()
+const Piece* Board::getPieceAt(int x, int y) const
+{
+    // Inline bounds check for better performance
+    if (static_cast<unsigned>(x) >= 8 || static_cast<unsigned>(y) >= 8)
+    {
+        return nullptr;
+    }
+    return m_PieceBoard[y][x].get();
+}
+
+SDL_Renderer* Board::getRenderer() const
 {
     return m_Renderer;
 };
@@ -119,9 +130,19 @@ bool Board::movePiece(int oldX, int oldY, int newX, int newY, bool isReal)
         return false;
     }
 
+    const std::vector<std::pair<int, int>>& possibleMoves = piece->calculatePossibleMoves(*this);
+    const std::pair<int, int> targetMove(newX, newY);
 
-    std::vector<std::pair<int, int>> possibleMoves = piece->calculatePossibleMoves(*this);
-    if (std::find(possibleMoves.begin(), possibleMoves.end(), std::make_pair(newX, newY)) != possibleMoves.end())
+    // Use const reference and more efficient search
+    bool isValidMove = false;
+    for (const auto& move : possibleMoves) {
+        if (move.first == newX && move.second == newY) {
+            isValidMove = true;
+            break;
+        }
+    }
+
+    if (isValidMove)
     {
         m_TempPieces.push({std::move(m_PieceBoard[newY][newX]), piece->hasMoved});
         if (piece->getPiece() == PieceType::KING && abs(newX - oldX) == 2)
@@ -173,17 +194,20 @@ bool Board::tempMovePiece(int oldX, int oldY, int newX, int newY)
     {
         return false;
     }
-        if(!( (newY>=0 && newY<8) && newX>=0 && newX<8 ))
-        {
-            return false;
-        }
-        m_TempPieces.push({std::move(m_PieceBoard[newY][newX]), piece->hasMoved});
+
+    // Efficient bounds check using unsigned comparison
+    if (static_cast<unsigned>(newX) >= 8 || static_cast<unsigned>(newY) >= 8)
+    {
+        return false;
+    }
+
+    m_TempPieces.push({std::move(m_PieceBoard[newY][newX]), piece->hasMoved});
     m_PieceBoard[newY][newX] = std::move(m_PieceBoard[oldY][oldX]);
-        piece->setPosX(newX);
-        piece->setPosY(newY);
-        piece->hasMoved = true;
-        piece->setHasDoubleMoved(oldX, oldY, newX, newY);
-        return true;
+    piece->setPosX(newX);
+    piece->setPosY(newY);
+    piece->hasMoved = true;
+    piece->setHasDoubleMoved(oldX, oldY, newX, newY);
+    return true;
 }
 
 bool Board::isMoveSafe(int oldX, int oldY, int newX, int newY, ColorType kingColor, bool isReal)
@@ -219,10 +243,12 @@ bool Board::isMoveSafe(int oldX, int oldY, int newX, int newY, ColorType kingCol
 
 void Board::revertMove(int oldX, int oldY, int newX, int newY)
 {
-    if(!( (newY>=0 && newY<8) && newX>=0 && newX<8 ))
+    // Efficient bounds check
+    if (static_cast<unsigned>(newX) >= 8 || static_cast<unsigned>(newY) >= 8)
     {
         return;
     }
+
     m_PieceBoard[oldY][oldX] = std::move(m_PieceBoard[newY][newX]);
     Piece* piece = getPieceAt(oldX, oldY);
     if (piece != nullptr)
@@ -294,9 +320,10 @@ void Board::displayPossibleMoves(const std::vector<std::pair<int, int>>& possibl
 
 bool Board::isKingInCheck(ColorType kingColor, Board& board_)
 {
-    std::pair<int, int> kingPos = getKingPosition(kingColor, board_);
-    ColorType opponentColor = (kingColor == ColorType::WHITE) ? ColorType::BLACK : ColorType::WHITE;
+    const std::pair<int, int> kingPos = getKingPosition(kingColor, board_);
+    const ColorType opponentColor = (kingColor == ColorType::WHITE) ? ColorType::BLACK : ColorType::WHITE;
 
+    // Early exit optimization: check all opponent pieces
     for (int y = 0; y < 8; ++y)
     {
         for (int x = 0; x < 8; ++x)
@@ -304,10 +331,12 @@ bool Board::isKingInCheck(ColorType kingColor, Board& board_)
             Piece* piece = getPieceAt(x, y);
             if (piece != nullptr && piece->getColor() == opponentColor)
             {
-                std::vector<std::pair<int, int>> possibleMoves = piece->calculatePossibleMoves(*this, false);
-                if (std::find(possibleMoves.begin(), possibleMoves.end(), kingPos) != possibleMoves.end())
-                {
-                    return true;
+                const std::vector<std::pair<int, int>>& possibleMoves = piece->calculatePossibleMoves(*this, false);
+                // Manual search with early exit
+                for (const auto& move : possibleMoves) {
+                    if (move.first == kingPos.first && move.second == kingPos.second) {
+                        return true;
+                    }
                 }
             }
         }
@@ -367,10 +396,11 @@ std::pair<int, int> Board::getKingPosition(ColorType kingColor, Board& board_)
 
 
 int Board::getScore() {
-    int score = 0;
-    const int pieceValues[6] = {10, 30, 30, 50, 90, 1000}; // Pawn, Knight, Bishop, Rook, Queen, King
+    // Piece values: Pawn, Knight, Bishop, Rook, Queen, King
+    static constexpr int pieceValues[6] = {10, 30, 30, 50, 90, 1000};
 
-    const float pawnTable[8][8] = {
+    // Position tables for piece-square evaluation (static to avoid re-initialization)
+    static constexpr float pawnTable[8][8] = {
             { 0, 0, 0, 0, 0, 0, 0, 0 },
             { 1, 1, 2, 3, 3, 2, 1, 1 },
             { 1, 1, 2, 3, 3, 2, 1, 1 },
@@ -381,7 +411,7 @@ int Board::getScore() {
             { 0, 0, 0, 0, 0, 0, 0, 0 }
     };
 
-    const float knightTable[8][8] = {
+    static constexpr float knightTable[8][8] = {
             {-5, 0, -3, -3, -3, -3, 0, -5},
             {-4, -2,  0,  0,  0,  0, -2, -4},
             {-3,  0,  1,  1,  1,  1,  0, -3},
@@ -392,7 +422,7 @@ int Board::getScore() {
             {-5, -4, -3, -3, -3, -3, -4, -5}
     };
 
-    const float bishopTable[8][8] = {
+    static constexpr float bishopTable[8][8] = {
             {-2, -1, -1, -1, -1, -1, -1, -2},
             {-1,  0,  0,  0,  0,  0,  0, -1},
             {-1,  0,  1,  1,  1,  1,  0, -1},
@@ -403,7 +433,7 @@ int Board::getScore() {
             {-2, -1, -1, -1, -1, -1, -1, -2}
     };
 
-    const float rookTable[8][8] = {
+    static constexpr float rookTable[8][8] = {
             { 0,  0,  0,  0,  0,  0,  0,  0},
             { 1,  2,  2,  2,  2,  2,  2,  1},
             {-1,  0,  0,  0,  0,  0,  0, -1},
@@ -414,7 +444,7 @@ int Board::getScore() {
             { 0,  0,  0,  1,  1,  0,  0,  0}
     };
 
-    const float queenTable[8][8] = {
+    static constexpr float queenTable[8][8] = {
             {-2, -1, -1, -0.5, -0.5, -1, -1, -2},
             {-1,  0,  0,  0,  0,  0,  0, -1},
             {-1,  0,  0.5,  0.5,  0.5,  0.5,  0, -1},
@@ -425,7 +455,7 @@ int Board::getScore() {
             {-2, -1, -1, -0.5, -0.5, -1, -1, -2}
     };
 
-    const float kingTable[8][8] = {
+    static constexpr float kingTable[8][8] = {
             {2,  3,  1,  0,  0,  1,  3,  2},
             {2,  2,  0,  0,  0,  0,  2,  2},
             {-3, -4, -4, -5, -5, -4, -4, -3},
@@ -436,47 +466,49 @@ int Board::getScore() {
             { 2,  3,  1,  0,  0,  1,  3,  2}
     };
 
+    int score = 0;
+
     for (int y = 0; y < 8; ++y) {
         for (int x = 0; x < 8; ++x) {
-            Piece* piece = getPieceAt(x, y);
-            if (piece != nullptr) {
-                int pieceValue = 0;
-                float positionalValue = 0;
-                switch (piece->getPiece()) {
-                    case PieceType::PAWN:
-                        pieceValue = pieceValues[0];
-                        positionalValue = pawnTable[y][x];
-                        break;
-                    case PieceType::KNIGHT:
-                        pieceValue = pieceValues[1];
-                        positionalValue = knightTable[y][x];
-                        break;
-                    case PieceType::BISHOP:
-                        pieceValue = pieceValues[2];
-                        positionalValue = bishopTable[y][x];
-                        break;
-                    case PieceType::ROOK:
-                        pieceValue = pieceValues[3];
-                        positionalValue = rookTable[y][x];
-                        break;
-                    case PieceType::QUEEN:
-                        pieceValue = pieceValues[4];
-                        positionalValue = queenTable[y][x];
-                        break;
-                    case PieceType::KING:
-                        pieceValue = pieceValues[5];
-                        positionalValue = kingTable[y][x];
-                        break;
-                    default:
-                        break;
-                }
-                float pieceScore = pieceValue + positionalValue;
-                if (piece->getColor() == ColorType::BLACK) {
-                    score -= pieceScore;
-                } else {
-                    score += pieceScore;
-                }
+            const Piece* piece = getPieceAt(x, y);
+            if (piece == nullptr) {
+                continue;
             }
+
+            int pieceValue = 0;
+            float positionalValue = 0.0f;
+
+            switch (piece->getPiece()) {
+                case PieceType::PAWN:
+                    pieceValue = pieceValues[0];
+                    positionalValue = pawnTable[y][x];
+                    break;
+                case PieceType::KNIGHT:
+                    pieceValue = pieceValues[1];
+                    positionalValue = knightTable[y][x];
+                    break;
+                case PieceType::BISHOP:
+                    pieceValue = pieceValues[2];
+                    positionalValue = bishopTable[y][x];
+                    break;
+                case PieceType::ROOK:
+                    pieceValue = pieceValues[3];
+                    positionalValue = rookTable[y][x];
+                    break;
+                case PieceType::QUEEN:
+                    pieceValue = pieceValues[4];
+                    positionalValue = queenTable[y][x];
+                    break;
+                case PieceType::KING:
+                    pieceValue = pieceValues[5];
+                    positionalValue = kingTable[y][x];
+                    break;
+                default:
+                    continue;
+            }
+
+            const float pieceScore = static_cast<float>(pieceValue) + positionalValue;
+            score += (piece->getColor() == ColorType::BLACK) ? -static_cast<int>(pieceScore) : static_cast<int>(pieceScore);
         }
     }
 

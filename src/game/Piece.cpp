@@ -51,7 +51,13 @@ PieceType Piece::getPiece() const {
 }
 
 void Piece::initializeTexture(const std::string &path) {
-    IMG_Init(IMG_INIT_PNG); // Initialize PNG loading
+    // Initialize PNG loading once (static to ensure it's only called once)
+    static bool imgInitialized = []() {
+        IMG_Init(IMG_INIT_PNG);
+        return true;
+    }();
+    (void)imgInitialized; // Suppress unused variable warning
+
     SDL_Surface* loadedSurface = IMG_Load(path.c_str());
     if (loadedSurface == nullptr) {
         printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError());
@@ -69,43 +75,41 @@ void Piece::initializeTexture(const std::string &path) {
 
 void Piece::display(SDL_Renderer* renderer, int x, int y) {
     if (texture) {
-        SDL_Rect dstrect = { x, y, 80, 80 }; // Example destination rectangle
-        SDL_RenderCopy(renderer, texture, NULL, &dstrect);
+        constexpr int PIECE_SIZE = 80;
+        SDL_Rect dstrect = { x, y, PIECE_SIZE, PIECE_SIZE };
+        SDL_RenderCopy(renderer, texture, nullptr, &dstrect);
     }
 }
 
 std::string Piece::getPieceTexturePath() {
-    std::string path = "../assets/Pieces/";
+    std::string path;
+    path.reserve(40); // Pre-allocate to avoid reallocations
 
+    path = "../assets/Pieces/";
+    path += (color == ColorType::BLACK) ? "black-" : "white-";
 
-    if(color == ColorType::BLACK) {
-        path += "black-";
-    } else {
-        path += "white-";
-    }
     switch(piece) {
         case PieceType::PAWN:
-            path +="pawn";
+            path += "pawn.png";
             break;
         case PieceType::KNIGHT:
-            path +="knight";
+            path += "knight.png";
             break;
         case PieceType::BISHOP:
-            path +="bishop";
+            path += "bishop.png";
             break;
         case PieceType::ROOK:
-            path +="rook";
+            path += "rook.png";
             break;
         case PieceType::QUEEN:
-            path +="queen";
+            path += "queen.png";
             break;
         case PieceType::KING:
-            path +="king";
+            path += "king.png";
             break;
-        default: return "";
+        default:
+            return "";
     }
-
-    path+= ".png";
 
     return path;
 }
